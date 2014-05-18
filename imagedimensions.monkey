@@ -83,11 +83,12 @@ Import byteorder
 	Function LoadImageDimensions:Int[](S:Stream, StreamIsCustom:Bool=True)
 		' Local variable(s):
 		Local A:Int[2]
+		Local InitialPosition:= S.Position
 		Local ImageFound:Bool = False
 				
 		If (Not ImageFound And S <> Null) Then
 			' Skip the safety byte.
-			S.Seek(1) ' (S.Position+1)
+			S.Seek(S.Position+1) ' 1
 			
 			' Try to read the PNG ID-string from the file:
 			If (S.ReadString(PNG_ID.Length(), PNG_CHARENCODE).ToUpper() = PNG_ID) Then
@@ -118,7 +119,7 @@ Import byteorder
 		Endif
 		
 		If (Not ImageFound And S <> Null) Then
-			S.Seek(0)
+			S.Seek(InitialPosition)
 			
 			' Make sure we're dealing with a JPEG.
 			If (S.ReadByte() = $FFFFFFFF And S.ReadByte() = JPEG_MARKER_SOI) Then				
@@ -186,7 +187,7 @@ Import byteorder
 		Endif
 		
 		If (Not ImageFound And S <> Null) Then
-			S.Seek(0)
+			S.Seek(InitialPosition)
 			
 			If (S.ReadString(GIF_ID_Base.Length, GIF_CHARENCODE) = GIF_ID_Base) Then
 				S.Seek(S.Position+GIF_ID_EXT_LEN)
