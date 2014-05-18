@@ -3,9 +3,9 @@ Strict
 Public
 
 ' Preprocessor related:
-#LOAD_IMG_DEMENSIONS = True
-#LOAD_IMG_DEMENSIONS_PATHS = True
-#LOAD_IMG_DEMENSIONS_CHECKEXT = False
+#LOAD_IMG_DIMENSIONS = True
+#LOAD_IMG_DIMENSIONS_PATHS = True
+#LOAD_IMG_DIMENSIONS_CHECKEXT = False
 
 ' Imports:
 
@@ -13,7 +13,7 @@ Public
 #If AUTOSTREAM_IMPLEMENTED
 	Import autostream
 #Else
-	#If LOAD_IMG_DEMENSIONS_PATHS
+	#If LOAD_IMG_DIMENSIONS_PATHS
 		Import brl.filestream
 	#End
 #End
@@ -21,7 +21,7 @@ Public
 Import path
 Import byteorder
 
-#If LOAD_IMG_DEMENSIONS
+#If LOAD_IMG_DIMENSIONS
 	' Constant variable(s):
 	
 	' PNG related:
@@ -55,9 +55,9 @@ Import byteorder
 		
 	' These commands only support 'GIF', 'PNG' and 'JPG' based file-formats:
 	
-	#If LOAD_IMG_DEMENSIONS_PATHS
-		Function LoadImageDemensions:Int[](Path:String)
-			#If LOAD_IMG_DEMENSIONS_CHECKEXT
+	#If LOAD_IMG_DIMENSIONS_PATHS
+		Function LoadImageDimensions:Int[](Path:String)
+			#If LOAD_IMG_DIMENSIONS_CHECKEXT
 				' Make sure the file-extension is supported:
 				If (StripExt(Path).ToLower() <> "png") Then
 					If (StripExt(Path).ToLower() <> "jpg") Then
@@ -76,11 +76,11 @@ Import byteorder
 			#End
 			
 			' Call the main implementation.
-			Return LoadImageDemensions(S, False)
+			Return LoadImageDimensions(S, False)
 		End
 	#End
 	
-	Function LoadImageDemensions:Int[](S:Stream, StreamIsCustom:Bool=True)
+	Function LoadImageDimensions:Int[](S:Stream, StreamIsCustom:Bool=True)
 		' Local variable(s):
 		Local A:Int[2]
 		Local ImageFound:Bool = False
