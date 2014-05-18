@@ -1,0 +1,3 @@
+[submodule "imagedimensions"]
+	path = imagedimensions
+	url = https://github.com/Regal-Internet-Brothers/imagedimensions.git
