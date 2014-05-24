@@ -76,11 +76,11 @@ Import byteorder
 			#End
 			
 			' Call the main implementation.
-			Return LoadImageDimensions(S, False)
+			Return LoadImageDimensions(S, False, False)
 		End
 	#End
 	
-	Function LoadImageDimensions:Int[](S:Stream, StreamIsCustom:Bool=True)
+	Function LoadImageDimensions:Int[](S:Stream, SeekBackToOrigin:Bool=False, StreamIsCustom:Bool=True)
 		' Local variable(s):
 		Local A:Int[2]
 		Local InitialPosition:= S.Position
@@ -203,16 +203,22 @@ Import byteorder
 		
 		#Rem
 		If (Not ImageFound And S <> Null) Then
-			S.Seek(0)
+			S.Seek(InitialPosition)
 		Endif
 		#End
+		
+		If (SeekBackToOrigin And S <> Null) Then
+			S.Seek(InitialPosition)
+		Endif
 		
 		' Close the generated stream.
 		If (S <> Null) Then
 			#If AUTOSTREAM_IMPLEMENTED
 				CloseAutoStream(S, StreamIsCustom)
 			#Else
-				S.Close()
+				If (Not StreamIsCustom) Then
+					S.Close()
+				Endif
 			#End
 			
 			S = Null
