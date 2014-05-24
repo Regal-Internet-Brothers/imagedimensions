@@ -211,7 +211,7 @@ Import byteorder
 			S.Seek(InitialPosition)
 		Endif
 		
-		' Close the generated stream.
+		' Close the generated stream:
 		If (S <> Null) Then
 			#If AUTOSTREAM_IMPLEMENTED
 				CloseAutoStream(S, StreamIsCustom)
@@ -224,7 +224,7 @@ Import byteorder
 			S = Null
 		Endif
 		
-		' Return the demension-array.
+		' Return the dimension-array.
 		Return A
 	End
 	
