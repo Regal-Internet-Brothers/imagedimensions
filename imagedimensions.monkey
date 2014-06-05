@@ -62,7 +62,7 @@ Import byteorder
 				If (StripExt(Path).ToLower() <> "png") Then
 					If (StripExt(Path).ToLower() <> "jpg") Then
 						If (StripExt(Path).ToLower() <> "gif") Then
-							Return Null
+							Return [0, 0]
 						Endif
 					Endif
 				Endif
