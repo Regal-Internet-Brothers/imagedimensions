@@ -83,6 +83,12 @@ Import byteorder
 	Function LoadImageDimensions:Int[](S:Stream, SeekBackToOrigin:Bool=False, StreamIsCustom:Bool=True)
 		' Local variable(s):
 		Local A:Int[2]
+		
+		' Check for errors:
+		If (S = Null Or S.Eof()) Then
+			Return A
+		Endif
+		
 		Local InitialPosition:= S.Position
 		Local ImageFound:Bool = False
 				
