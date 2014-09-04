@@ -3,7 +3,18 @@ Strict
 Public
 
 ' Imports:
-Import stringutil
+#If STRING_UTIL_IMPLEMENTED
+	Import stringutil
+#Else
+	' Constant variable(s) (Private):
+	Private
+	
+	Const Slash:String = "/"
+	Const ColonSlash:String = ":/"
+	Const DotSlash:String = "./"
+	
+	Public
+#End
 
 ' Functions:
 
