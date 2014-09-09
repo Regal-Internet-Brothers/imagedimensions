@@ -24,6 +24,14 @@ Import byteorder
 #If LOAD_IMG_DIMENSIONS
 	' Constant variable(s):
 	
+	' Output-data related:
+	
+	' The size of the default output-array.
+	Const IMAGEDIMENSIONS_SIZE:Int = 2
+	
+	Const IMAGEDIMENSION_WIDTH:Int = 0
+	Const IMAGEDIMENSION_HEIGHT:Int = 1
+	
 	' PNG related:
 	Const PNG_CHARENCODE:String = "ascii"
 	
@@ -52,11 +60,59 @@ Import byteorder
 	Global JPEG_MARKERS_EOF:Int[] = [$FFFFFFDA, $FFFFFFD9] ' 0xDA, 0xD9
 
 	' Functions:
+	
+	' This command generates an image-dimension container.
+	Function GenerateImageDimensionContainer:Int[]()
+		Return New Int[IMAGEDIMENSIONS_SIZE]
+	End
+	
+	' This command detects if an image-dimension-array is in working order.
+	Function ValidImageDimensions:Bool(Dimensions:Int[], Offset:Int=0)
+		' Check for errors:
+		
+		' Make sure we can even check the container:
+		If (InvalidImageDimensionContainer(Dimensions, Offset)) Then
+			' The container is not in working order, notify the user.
+			Return False
+		Endif
+		
+		' Make sure the dimensions aren't zero:
+		If (Dimensions[Offset+IMAGEDIMENSION_WIDTH] = 0) Then Return False
+		If (Dimensions[Offset+IMAGEDIMENSION_HEIGHT] = 0) Then Return False
+		
+		' Return the default response.
+		Return True
+	End
+	
+	' This simply inverts the response of 'ValidImageDimensions'.
+	Function InvalidImageDimensions:Bool(Dimensions:Int[], Offset:Int=0)
+		Return Not ValidImageDimensions(Dimensions, Offset)
+	End
+	
+	' This command detects if an image-dimension container is the correct size.
+	Function ValidImageDimensionContainer:Bool(Container:Int[], Offset:Int=0)
+		' Check if this is a valid container:
+		If (Container.Length()-Offset < IMAGEDIMENSIONS_SIZE) Then
+			' This container is too small, notify the user.
+			Return False
+		Endif
+		
+		' Return the default response.
+		Return True
+	End
+	
+	' This simply inverts the response of 'ValidImageDimensionContainer'.
+	Function InvalidImageDimensionContainer:Bool(Container:Int[], Offset:Int=0)
+		Return Not ValidImageDimensionContainer(Container, Offset)
+	End
 		
 	' These commands only support 'GIF', 'PNG' and 'JPG' based file-formats:
-	
 	#If LOAD_IMG_DIMENSIONS_PATHS
 		Function LoadImageDimensions:Int[](Path:String)
+			Return LoadImageDimensions(Path, GenerateImageDimensionContainer())
+		End
+		
+		Function LoadImageDimensions:Int[](Path:String, Output:Int[], Output_Offset:Int=0)
 			#If LOAD_IMG_DIMENSIONS_CHECKEXT
 				' Make sure the file-extension is supported:
 				If (StripExt(Path).ToLower() <> "png") Then
@@ -76,19 +132,34 @@ Import byteorder
 			#End
 			
 			' Call the main implementation.
-			Return LoadImageDimensions(S, False, False)
+			Return LoadImageDimensions(S, Output, Output_Offset, False, False)
 		End
 	#End
 	
 	Function LoadImageDimensions:Int[](S:Stream, SeekBackToOrigin:Bool=False, StreamIsCustom:Bool=True)
-		' Local variable(s):
-		Local A:Int[2]
-		
-		' Check for errors:
-		If (S = Null Or S.Eof()) Then
-			Return A
+		Return LoadImageDimensions(S, GenerateImageDimensionContainer(), 0, SeekBackToOrigin, StreamIsCustom)
+	End
+	
+	Function LoadImageDimensions:Int[](S:Stream, Output:Int[], Output_Offset:Int=0, SeekBackToOrigin:Bool=False, StreamIsCustom:Bool=True)
+		' Make sure we can even use the array:
+		If (InvalidImageDimensionContainer(Output, Output_Offset)) Then
+			' In this situation, we should return an empty array. (The 'Output' array isn't in working order)
+			Return []
 		Endif
 		
+		' For the sake of error detection, set the needed elements of 'Output' to zero:
+		Output[Output_Offset+IMAGEDIMENSION_WIDTH] = 0
+		Output[Output_Offset+IMAGEDIMENSION_HEIGHT] = 0
+		
+		' Check for errors:
+		
+		' Make sure we can use the input-stream:
+		If (S = Null Or S.Eof()) Then
+			' The input-stream is not in working order, return the output-array.
+			Return Output
+		Endif
+		
+		' Local variable(s):
 		Local InitialPosition:= S.Position
 		Local ImageFound:Bool = False
 				
@@ -109,8 +180,8 @@ Import byteorder
 					' Just in case, we'll check the chunk-type:
 					If (ChunkLength) Then
 						If (S.ReadString(PNG_ChunkType_Length, PNG_CHARENCODE).ToUpper() = PNG_ChunkType_IHDR) Then
-							A[0] = Abs(NToHL(S.ReadInt())) 'NToHL(S.ReadInt())
-							A[1] = Abs(NToHL(S.ReadInt())) 'NToHL(S.ReadInt())
+							Output[Output_Offset+IMAGEDIMENSION_WIDTH] = Abs(NToHL(S.ReadInt())) 'NToHL(S.ReadInt())
+							Output[Output_Offset+IMAGEDIMENSION_HEIGHT] = Abs(NToHL(S.ReadInt())) 'NToHL(S.ReadInt())
 							
 							ImageFound = True
 							
@@ -153,8 +224,8 @@ Import byteorder
 							' Skip any extra bytes:
 							S.Seek(S.Position+1)
 							
-							A[1] = Abs(NToHS(S.ReadShort())) 'NToHS(S.ReadShort())
-							A[0] = Abs(NToHS(S.ReadShort())) 'NToHS(S.ReadShort())
+							Output[Output_Offset+IMAGEDIMENSION_HEIGHT] = Abs(NToHS(S.ReadShort())) 'NToHS(S.ReadShort())
+							Output[Output_Offset+IMAGEDIMENSION_WIDTH] = Abs(NToHS(S.ReadShort())) 'NToHS(S.ReadShort())
 							
 							ImageFound = True
 							
@@ -198,8 +269,8 @@ Import byteorder
 			If (S.ReadString(GIF_ID_Base.Length, GIF_CHARENCODE) = GIF_ID_Base) Then
 				S.Seek(S.Position+GIF_ID_EXT_LEN)
 				
-				A[0] = Abs(S.ReadShort()) 'S.ReadShort()
-				A[1] = Abs(S.ReadShort()) 'S.ReadShort()
+				Output[Output_Offset+IMAGEDIMENSION_WIDTH] = Abs(S.ReadShort()) 'S.ReadShort()
+				Output[Output_Offset+IMAGEDIMENSION_HEIGHT] = Abs(S.ReadShort()) 'S.ReadShort()
 				
 				ImageFound = True
 				
@@ -231,7 +302,7 @@ Import byteorder
 		Endif
 		
 		' Return the dimension-array.
-		Return A
+		Return Output
 	End
 	
 	' Classes:
