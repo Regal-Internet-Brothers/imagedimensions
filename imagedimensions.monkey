@@ -126,9 +126,9 @@ Import byteorder
 			
 			' Generate a file-stream.
 			#If AUTOSTREAM_IMPLEMENTED
-				Local S:= OpenAutoStream(FixDataPath(Path), "r")
+				Local S:= OpenAutoStream(Path, "r")
 			#Else
-				Local S:= FileStream.Open(FixDataPath(Path), "r")
+				Local S:= FileStream.Open(Path, "r")
 			#End
 			
 			' Call the main implementation.
