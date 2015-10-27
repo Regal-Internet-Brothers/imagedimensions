@@ -8,18 +8,16 @@ Public
 #LOAD_IMG_DIMENSIONS_CHECKEXT = False
 
 ' Imports:
+Import regal.byteorder
 
 ' Don't worry about this, it doesn't concern anyone but me:
 #If AUTOSTREAM_IMPLEMENTED
-	Import autostream
+	Import regal.autostream
 #Else
 	#If LOAD_IMG_DIMENSIONS_PATHS
 		Import brl.filestream
 	#End
 #End
-
-Import path
-Import byteorder
 
 #If LOAD_IMG_DIMENSIONS
 	' Constant variable(s):
